@@ -15,9 +15,10 @@
   padding: 1rem;
 }
 
-.navbar .navbar-title {
+.navbar .navbar-title , .admin-navbar-title {
   margin: 0;
   color: #0e1a1e;
+  text-transform: capitalize;
 }
 
 .navbar .links a {

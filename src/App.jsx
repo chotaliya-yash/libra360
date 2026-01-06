@@ -1,7 +1,7 @@
 import React from "react";
 import { createBrowserRouter, createRoutesFromElements, RouterProvider, Route } from "react-router-dom";
 import { UserRoutes } from "./routes/UserRoutes";
-// import { AdminRoutes } from "./routes/AdminRoutes";
+import { AdminRoutes } from "./routes/AdminRoutes";
 import NotFound from "./components/NotFound";
 
 const App = () => {
@@ -9,7 +9,7 @@ const App = () => {
     createRoutesFromElements(
       <>
         {UserRoutes}
-        {/* {AdminRoutes} */}
+        {AdminRoutes}
         <Route path="*" element={<NotFound />} />
       </>
     )

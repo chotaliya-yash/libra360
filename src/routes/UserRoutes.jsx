@@ -7,8 +7,8 @@ import NotFound from "../components/NotFound";
 export const UserRoutes = (
   <Route path="/" element={<RootLayout />}>
     <Route index element={<HomePage />} />
-    {/* <Route path="login" element={<Log_in />} />
-    <Route path="signin" element={<Signin />} /> */}
+    {/* <Route path="login" element={<Log_in />} /> */}
+    {/* <Route path="signin" element={<Signin />} /> */}
     <Route path="*" element={<NotFound />} />
     {/* Protected User Routes
     <Route element={<ProtectedRoute />}>
