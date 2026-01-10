@@ -26,18 +26,22 @@ import {
   GroupAdd,
 } from "@mui/icons-material";
 import { Outlet } from "react-router-dom";
-
+import { Link } from "react-router-dom";
 const drawerWidth = 280;
 
 export default function AdminRootlayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const menuItems = [
-    { text: "Dashboard", icon: <DashboardIcon /> },
-    { text: "Book Management", icon: <LibraryBooks /> },
-    { text: "Category/Genre", icon: <Category /> },
+    { text: "Dashboard", icon: <DashboardIcon />, path: "/admin/dashboard" },
+    {
+      text: "Book Management",
+      icon: <LibraryBooks />,
+      path: "/admin/bookmanagement",
+    },
+    { text: "Category/Genre", icon: <Category />, path: "/admin/Genre" },
     { text: "Author/Publisher", icon: <Person /> },
-    { text: "Issue Book", icon: <SwapHoriz /> },
+    { text: "Issue Book", icon: <SwapHoriz />, path: "/admin/issue-book" },
     { text: "Return/Renew", icon: <History /> },
     { text: "Penalty/Fine", icon: <Payments /> },
     { text: "Member Management", icon: <GroupAdd /> },
@@ -57,15 +61,31 @@ export default function AdminRootlayout() {
       <List>
         {menuItems.map((item) => (
           <ListItem key={item.text} disablePadding>
-            <ListItemButton sx={{ "&:hover": { bgcolor: "#f5f5f5" } }}>
-              <ListItemIcon sx={{ color: "primary.main" }}>
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText
-                primary={item.text}
-                primaryTypographyProps={{ fontSize: "14px", fontWeight: "500" }}
-              />
-            </ListItemButton>
+            <Link
+              to={item.path}
+              style={{
+                textDecoration: "none",
+                color: "inherit",
+                width: "100%",
+              }}
+            >
+              <ListItemButton
+                sx={{
+                  "&:hover": {
+                    bgcolor: "primary.main",
+                    color: "white",
+                    fontWeight: "bold",
+                    borderRadius: "0px 25px 25px 0px",
+                  },
+                }}
+              >
+                <ListItemIcon sx={{ color: "black" }}>{item.icon}</ListItemIcon>
+                <ListItemText
+                  primary={item.text}
+                  primaryTypographyProps={{ fontSize: "14px" }}
+                />
+              </ListItemButton>
+            </Link>
           </ListItem>
         ))}
       </List>
@@ -101,7 +121,12 @@ export default function AdminRootlayout() {
             component="div"
             sx={{ fontWeight: 600 }}
           >
-            <Typography className="admin-navbar-title loraFont" fontSize={"30px"}>libra360°</Typography>
+            <Typography
+              className="admin-navbar-title loraFont"
+              fontSize={"30px"}
+            >
+              libra360°
+            </Typography>
           </Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Typography
