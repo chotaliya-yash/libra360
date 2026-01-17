@@ -4,15 +4,14 @@ import axios from "axios";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
-import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
-import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
+import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn"; 
 
 const IssueBook = () => {
   const navigate = useNavigate();
   const today = new Date().toISOString().split("T")[0];
 
   // Step 1: Verification State
-  const [isVerified, setIsVerified] = useState(true);
+  const [isVerified, setIsVerified] = useState(false);
   const [formData, setFormData] = useState({
     user_id: "",
     book_id: "",
@@ -47,7 +46,7 @@ const IssueBook = () => {
       alert("Return date cannot be earlier than today!");
       return;
     }
-
+    console.log(formData);   
     try {
       const res = await axios.post(
         "http://localhost:5000/api/book-issue/verifyDetails",

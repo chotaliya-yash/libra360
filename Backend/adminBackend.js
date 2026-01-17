@@ -20,7 +20,7 @@ app.use(
       "http://localhost:3000",
     ],
     credentials: true,
-  })
+  }),
 );
 
 app.use(
@@ -35,7 +35,7 @@ app.use(
       sameSite: "lax",
       maxAge: 1000 * 60 * 60 * 5, // 5 hours
     },
-  })
+  }),
 );
 
 const pool = new Pool({
@@ -76,7 +76,7 @@ app.post("/api/admin/Register-member", IsAdmin, async (req, res) => {
     // 1. Check if email exists in the 'members' table
     const existing = await client.query(
       "SELECT email FROM members WHERE email = $1 FOR UPDATE",
-      [email]
+      [email],
     );
 
     if (existing.rows.length > 0) {
@@ -139,7 +139,7 @@ app.post("/api/categories/add", IsAdmin, async (req, res) => {
 
     const existing = await pool.query(
       "SELECT category_id FROM categories WHERE category_name = $1",
-      [category_name]
+      [category_name],
     );
 
     if (existing.rows.length > 0) {
@@ -148,7 +148,7 @@ app.post("/api/categories/add", IsAdmin, async (req, res) => {
 
     const result = await pool.query(
       "INSERT INTO categories (category_name) VALUES ($1) RETURNING *",
-      [category_name]
+      [category_name],
     );
 
     res.status(201).json({
@@ -167,7 +167,7 @@ app.delete("/api/categories/:id", IsAdmin, async (req, res) => {
     // Attempt to delete the category
     const result = await pool.query(
       "DELETE FROM categories WHERE category_id = $1 RETURNING *",
-      [id]
+      [id],
     );
 
     if (result.rows.length === 0) {
@@ -216,7 +216,7 @@ app.post("/api/authors/add", IsAdmin, async (req, res) => {
 
     const existing = await pool.query(
       "SELECT author_id FROM authors WHERE author_name = $1",
-      [author_name]
+      [author_name],
     );
 
     if (existing.rows.length > 0) {
@@ -225,7 +225,7 @@ app.post("/api/authors/add", IsAdmin, async (req, res) => {
 
     const result = await pool.query(
       "INSERT INTO authors (author_name) VALUES ($1) RETURNING *",
-      [author_name]
+      [author_name],
     );
 
     res.status(201).json({
@@ -259,7 +259,7 @@ app.delete("/api/authors/:id", IsAdmin, async (req, res) => {
     console.log("Deleting author with ID:", id);
     const result = await pool.query(
       "DELETE FROM authors WHERE author_id = $1 RETURNING *",
-      [id]
+      [id],
     );
 
     if (result.rows.length === 0) {
@@ -297,13 +297,15 @@ app.get("/admin/auther-category", IsAdmin, async (req, res) => {
   }
 });
 
+// book
+
 app.post("/api/books/add", IsAdmin, async (req, res) => {
   const { title, isbn_number, category_id, author_id, price, quantity } =
     req.body;
   try {
     const isbnCheck = await pool.query(
       "SELECT book_id FROM books WHERE isbn_number = $1",
-      [isbn_number]
+      [isbn_number],
     );
 
     if (isbnCheck.rows.length > 0) {
@@ -314,7 +316,7 @@ app.post("/api/books/add", IsAdmin, async (req, res) => {
     console.log("Adding book:", title);
     const newBook = await pool.query(
       "INSERT INTO books (title , isbn_number ,category_name, author_name, price , quantity , available_stock) VALUES ($1, $2, $3, $4, $5, $6 , $7) RETURNING *",
-      [title, isbn_number, category_id, author_id, price, quantity , quantity]
+      [title, isbn_number, category_id, author_id, price, quantity, quantity],
     );
     res
       .status(201)
@@ -325,6 +327,132 @@ app.post("/api/books/add", IsAdmin, async (req, res) => {
   }
 });
 
+// issues verify
+
+app.post("/api/book-issue/verifyDetails", IsAdmin, async (req, res) => {
+  const { user_id, book_id, issue_date, due_date } = req.body;
+  console.log(
+    "verify detaiils : " +
+      user_id +
+      " " +
+      book_id +
+      " " +
+      issue_date +
+      " " +
+      due_date,
+  );
+  try {
+    if (user_id === "" && book_id === "") {
+      return res
+        .status(400)
+        .json({ message: "User ID and Book ID cannot be empty" });
+    }
+
+    const user = await pool.query(
+      "SELECT member_id , full_name FROM public.members where member_id = $1 and is_active = true; ",
+      [user_id],
+    );
+    if (user.rows.length === 0) {
+      return res.status(400).json({ message: "Invalid User ID or not Active" });
+    }
+    const bookVerify = await pool.query(
+      "SELECT book_id , title , isbn_number,  price, quantity, available_stock FROM books where book_id = $1 and quantity > 0; ",
+      [book_id],
+    );
+    if (bookVerify.rows.length === 0) {
+      return res.status(400).json({ message: "Invalid Book ID" });
+    }
+    if (bookVerify.rows[0].available_stock < 1) {
+      return res.status(400).json({ message: "Book is not available" });
+    }
+    const calculation = Math.ceil(
+      (new Date(due_date) - new Date(issue_date)) / (1000 * 60 * 60 * 24),
+    );
+    res.status(200).json({
+      user_id: user.rows[0].member_id,
+      user_name: user.rows[0].full_name,
+      book_id: bookVerify.rows[0].book_id,
+      book_name: bookVerify.rows[0].title,
+      price: bookVerify.rows[0].price,
+      amount: bookVerify.rows[0].price * calculation,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error", details: error.message });
+  }
+});
+
+app.post("/api/book-issue/add", IsAdmin, async (req, res) => {
+  const {
+    user_id,
+    user_name,
+    book_id,
+    book_name,
+    issue_date,
+    due_date,
+    amount,
+    payment_method,
+    status,
+  } = req.body;
+
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN'); // Start transaction
+
+    // 1. Insert the record into book_issue
+    // total_days and return_date are handled as null initially
+    const issueQuery = `
+      INSERT INTO public.book_issue(
+        book_id, book_name, user_id, user_name, 
+        issue_date, due_date, status, payment_method, amount
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+      RETURNING *`;
+
+    const issueResult = await client.query(issueQuery, [
+      book_id,
+      book_name,
+      user_id,
+      user_name,
+      issue_date,
+      due_date,
+      status || 'Issued',
+      payment_method,
+      amount
+    ]);
+
+    // 2. Update the Books table to decrease available_stock
+    const updateStockQuery = `
+      UPDATE books 
+      SET available_stock = available_stock - 1 
+      WHERE book_id = $1 AND available_stock > 0
+      RETURNING available_stock`;
+
+    const stockResult = await client.query(updateStockQuery, [book_id]);
+
+    if (stockResult.rows.length === 0) {
+      throw new Error("Book out of stock or invalid Book ID");
+    }
+
+    await client.query('COMMIT'); // Save changes
+
+    res.status(201).json({
+      message: "Book issued successfully",
+      data: issueResult.rows[0]
+    });
+
+  } catch (error) {
+    await client.query('ROLLBACK'); // Undo changes if any step fails
+    console.error("Issue Error:", error.message);
+    res.status(500).json({ 
+      error: "Failed to issue book", 
+      details: error.message 
+    });
+  } finally {
+    client.release(); // Return connection to pool
+  }
+});
+
 app.post("/api/admin/signup", async (req, res) => {
   const { full_name, email, password, role, phone } = req.body;
 
@@ -332,7 +460,7 @@ app.post("/api/admin/signup", async (req, res) => {
     // Check if admin already exists
     const existing = await pool.query(
       "SELECT admin_id FROM admins WHERE email = $1",
-      [email]
+      [email],
     );
 
     if (existing.rows.length > 0) {
@@ -345,7 +473,7 @@ app.post("/api/admin/signup", async (req, res) => {
       `INSERT INTO admins (full_name, email, password, role, phone)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING admin_id`,
-      [full_name, email, hashedPassword, role, phone]
+      [full_name, email, hashedPassword, role, phone],
     );
 
     res.status(201).json({
