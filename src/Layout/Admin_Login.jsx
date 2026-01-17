@@ -36,10 +36,9 @@ const Admin_Login = () => {
       );
 
       if (response.status === 200) {
-        navigate("/dashboard");
+        navigate("/admin/dashboard");
       }
     } catch (err) {
-      // FIXED: Correctly accessing the error status and message
       if (err.response) {
         const status = err.response.status;
         if (status === 401) {

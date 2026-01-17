@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 // Material Icons Imports
 import BookIcon from "@mui/icons-material/Book";
 import PeopleIcon from "@mui/icons-material/People";
@@ -9,6 +9,9 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import { Link } from "react-router-dom";
 
 const Dashboard = () => {
+  useEffect(()=>{
+    document.title = "dashboard";
+  },[]);
   return (
     <div className="container-fluid p-4" style={{ minHeight: "100vh" }}>
       {/* Page Heading */}

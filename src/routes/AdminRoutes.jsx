@@ -9,6 +9,7 @@ import AddBook from "../components/AddBook";
 import Register from "../components/Register";
 import IssueBook from "../components/IssueBook";
 import CategoryManagement from "../components/CategoryManagement";
+import AuthorManagement from "../components/AuthorManagement";
 export const AdminRoutes = (
   <>
     <Route path="/admin/login" element={<Admin_Login />} />
@@ -27,6 +28,7 @@ export const AdminRoutes = (
       <Route path="bookmanagement" element={<BookManagement />} />
       <Route path="issue-book" element={<IssueBook />} />
       <Route path="Genre" element={<CategoryManagement />} />
+      <Route path="Author" element={<AuthorManagement />} />
       <Route path="*" element={<AdminNotFound />} />
     </Route>
   </>

@@ -40,7 +40,7 @@ export default function AdminRootlayout() {
       path: "/admin/bookmanagement",
     },
     { text: "Category/Genre", icon: <Category />, path: "/admin/Genre" },
-    { text: "Author/Publisher", icon: <Person /> },
+    { text: "Author/Publisher", icon: <Person />, path: "/admin/Author" },
     { text: "Issue Book", icon: <SwapHoriz />, path: "/admin/issue-book" },
     { text: "Return/Renew", icon: <History /> },
     { text: "Penalty/Fine", icon: <Payments /> },
