@@ -55,6 +55,8 @@ const IsAdmin = (req, res, next) => {
   }
 };
 
+//member 
+
 app.post("/api/admin/Register-member", IsAdmin, async (req, res) => {
   const {
     full_name,
@@ -124,6 +126,33 @@ app.post("/api/admin/Register-member", IsAdmin, async (req, res) => {
     });
   } finally {
     client.release();
+  }
+});
+
+app.get("/api/members", IsAdmin, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT member_id, full_name, email, phone, is_active, gender, date_of_birth 
+      FROM public.members 
+      ORDER BY member_id DESC
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch members" , details: err.message});
+  }
+});
+
+app.patch("/api/members/toggle-status/:id", IsAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { is_active } = req.body;
+  try {
+    await pool.query(
+      "UPDATE public.members SET is_active = $1 WHERE member_id = $2",
+      [is_active, id]
+    );
+    res.status(200).json({ message: "Status updated successfully" });
+  } catch (err) {
+    res.status(500).json({ error: "Update failed" , details: err.message});
   }
 });
 
@@ -324,6 +353,23 @@ app.post("/api/books/add", IsAdmin, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error", details: err.message });
+  }
+});
+
+app.get("/api/books", IsAdmin, async (req, res) => {
+  try {
+    // Exact columns requested from public.books
+    const query = `
+      SELECT book_id, title, isbn_number, category_name, author_name, 
+             price, quantity, available_stock 
+      FROM public.books 
+      ORDER BY book_id DESC`;
+      
+    const result = await pool.query(query);
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Failed to fetch inventory" });
   }
 });
 

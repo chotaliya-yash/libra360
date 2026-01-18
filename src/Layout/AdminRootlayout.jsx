@@ -44,7 +44,7 @@ export default function AdminRootlayout() {
     { text: "Issue Book", icon: <SwapHoriz />, path: "/admin/issue-book" },
     { text: "Return/Renew", icon: <History /> },
     { text: "Penalty/Fine", icon: <Payments /> },
-    { text: "Member Management", icon: <GroupAdd /> },
+    { text: "Member Management", icon: <GroupAdd /> , path: "/admin/membermanagement"},
   ];
 
   const drawer = (

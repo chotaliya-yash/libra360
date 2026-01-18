@@ -61,7 +61,7 @@ const MemberManagement = () => {
           Member Management
         </h4>
         <div className="d-flex gap-2">
-          <button className="btn btn-primary btn-sm px-3" onClick={() => navigate("/admin/add-member")}>
+          <button className="btn btn-primary btn-sm px-3" onClick={() => navigate("/admin/register")}>
             <PersonAddIcon className="me-1" /> Add Member
           </button>
           <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate(-1)}>
