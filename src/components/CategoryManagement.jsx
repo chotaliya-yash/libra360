@@ -26,6 +26,7 @@ const CategoryManagement = () => {
   };
 
   useEffect(() => {
+    document.title = "Category Management";
     fetchCategories();
   }, []);
 

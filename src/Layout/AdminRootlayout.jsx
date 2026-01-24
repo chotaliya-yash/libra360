@@ -42,9 +42,13 @@ export default function AdminRootlayout() {
     { text: "Category/Genre", icon: <Category />, path: "/admin/Genre" },
     { text: "Author/Publisher", icon: <Person />, path: "/admin/Author" },
     { text: "Issue Book", icon: <SwapHoriz />, path: "/admin/issue-book" },
-    { text: "Return/Renew", icon: <History /> },
+    { text: "Return/Renew", icon: <History />, path: "/admin/return-renew" },
     { text: "Penalty/Fine", icon: <Payments /> },
-    { text: "Member Management", icon: <GroupAdd /> , path: "/admin/membermanagement"},
+    {
+      text: "Member Management",
+      icon: <GroupAdd />,
+      path: "/admin/membermanagement",
+    },
   ];
 
   const drawer = (

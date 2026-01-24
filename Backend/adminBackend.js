@@ -55,7 +55,7 @@ const IsAdmin = (req, res, next) => {
   }
 };
 
-//member 
+//member
 
 app.post("/api/admin/Register-member", IsAdmin, async (req, res) => {
   const {
@@ -138,7 +138,9 @@ app.get("/api/members", IsAdmin, async (req, res) => {
     `);
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch members" , details: err.message});
+    res
+      .status(500)
+      .json({ error: "Failed to fetch members", details: err.message });
   }
 });
 
@@ -148,11 +150,11 @@ app.patch("/api/members/toggle-status/:id", IsAdmin, async (req, res) => {
   try {
     await pool.query(
       "UPDATE public.members SET is_active = $1 WHERE member_id = $2",
-      [is_active, id]
+      [is_active, id],
     );
     res.status(200).json({ message: "Status updated successfully" });
   } catch (err) {
-    res.status(500).json({ error: "Update failed" , details: err.message});
+    res.status(500).json({ error: "Update failed", details: err.message });
   }
 });
 
@@ -364,7 +366,7 @@ app.get("/api/books", IsAdmin, async (req, res) => {
              price, quantity, available_stock 
       FROM public.books 
       ORDER BY book_id DESC`;
-      
+
     const result = await pool.query(query);
     res.status(200).json(result.rows);
   } catch (err) {
@@ -428,6 +430,8 @@ app.post("/api/book-issue/verifyDetails", IsAdmin, async (req, res) => {
   }
 });
 
+// issue add
+
 app.post("/api/book-issue/add", IsAdmin, async (req, res) => {
   const {
     user_id,
@@ -444,10 +448,8 @@ app.post("/api/book-issue/add", IsAdmin, async (req, res) => {
   const client = await pool.connect();
 
   try {
-    await client.query('BEGIN'); // Start transaction
+    await client.query("BEGIN"); // Start transaction
 
-    // 1. Insert the record into book_issue
-    // total_days and return_date are handled as null initially
     const issueQuery = `
       INSERT INTO public.book_issue(
         book_id, book_name, user_id, user_name, 
@@ -462,9 +464,9 @@ app.post("/api/book-issue/add", IsAdmin, async (req, res) => {
       user_name,
       issue_date,
       due_date,
-      status || 'Issued',
+      status || "Issued",
       payment_method,
-      amount
+      amount,
     ]);
 
     // 2. Update the Books table to decrease available_stock
@@ -480,24 +482,174 @@ app.post("/api/book-issue/add", IsAdmin, async (req, res) => {
       throw new Error("Book out of stock or invalid Book ID");
     }
 
-    await client.query('COMMIT'); // Save changes
+    await client.query("COMMIT"); // Save changes
 
     res.status(201).json({
       message: "Book issued successfully",
-      data: issueResult.rows[0]
+      data: issueResult.rows[0],
     });
-
   } catch (error) {
-    await client.query('ROLLBACK'); // Undo changes if any step fails
+    await client.query("ROLLBACK"); // Undo changes if any step fails
     console.error("Issue Error:", error.message);
-    res.status(500).json({ 
-      error: "Failed to issue book", 
-      details: error.message 
+    res.status(500).json({
+      error: "Failed to issue book",
+      details: error.message,
     });
   } finally {
     client.release(); // Return connection to pool
   }
 });
+
+// issue book get
+
+app.get("/api/issues", IsAdmin, async (req, res) => {
+  console.log("Fetching issues requested by Admin...");
+  try {
+    // 1. Query the database
+    const result = await pool.query(
+      "SELECT * FROM book_issue WHERE status = 'Issued' ORDER BY issue_id DESC;",
+    );
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error("Database Error:", error);
+    res.status(500).json({
+      error: "Internal Server Error",
+      details: error.message,
+    });
+  }
+});
+
+app.get("/api/Book/getDate/:id", IsAdmin, async (req, res) => {
+  const { id } = req.params;
+  console.log("Fetching Price requested by Admin...");
+  try {
+    const result = await pool.query(
+      "SELECT price	FROM books WHERE book_id = $1;",
+      [id],
+    );
+    res.status(200).json(result.rows[0].price);
+  } catch (error) {
+    console.error("Database Error:", error);
+    res.status(500).json({
+      error: "Internal Server Error",
+      details: error.message,
+    });
+  }
+});
+
+app.post("/api/issue/renew/:id", IsAdmin, async (req, res) => {
+  const { id } = req.params;
+  const {
+    book_id,
+    book_name,
+    user_id,
+    user_name,
+    issue_date, 
+    due_date,
+    payment_method,
+    amount,
+  } = req.body.ReNewData;
+  console.log(req.body);
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    await client.query(
+      "UPDATE book_issue SET status = 'Returned' WHERE issue_id = $1",
+      [id],
+    );
+
+    const insertQuery = `
+      INSERT INTO book_issue (
+        book_id, book_name, user_id, user_name, 
+        issue_date, due_date, 
+        status, payment_method, amount, "Renew_Issue_id"
+      ) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      RETURNING issue_id;
+    `;
+
+    const values = [
+      book_id,
+      book_name,
+      user_id,
+      user_name,
+      issue_date, 
+      due_date, 
+      "Issued",
+      payment_method || "Cash",
+      amount,
+      id, 
+    ];
+
+    const result = await client.query(insertQuery, values);
+
+    await client.query("COMMIT");
+
+    res.status(200).json({
+      message: "Book renewed successfully",
+      newIssueId: result.rows[0].issue_id,
+    });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Database Error:", error);
+    res.status(500).json({
+      error: "Internal Server Error",
+      details: error.message,
+    });
+  } finally {
+    client.release();
+  }
+});
+
+app.post("/api/issue/return/:id", IsAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { message, type, amount } = req.body.modalData;
+  console.log( "id " + id  + " "+ message + " " + type + " " + amount);
+  
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const issueResult = await client.query(
+      "SELECT book_id FROM book_issue WHERE issue_id = $1 AND status = 'Issued'",
+      [id],
+    );
+
+    if (issueResult.rows.length === 0) {
+      throw new Error("Invalid issue ID or book already returned");
+    }
+
+    const bookId = issueResult.rows[0].book_id;
+
+    await client.query(
+      "UPDATE book_issue SET status = 'Returned' , return_date = $2 WHERE issue_id = $1",
+      [id , new Date()],
+    );
+
+    await client.query(
+      "UPDATE books SET available_stock = available_stock + 1 WHERE book_id = $1",
+      [bookId],
+    );
+    console.log("stock update !");
+    await client.query("COMMIT");
+
+    res.status(200).json({ message: "Book returned successfully" });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Return Error:", error.message);
+    res.status(500).json({
+      error: "Failed to return book",
+      details: error.message,
+    });
+  } finally {
+    client.release();
+  }
+});
+
+// admin auth
 
 app.post("/api/admin/signup", async (req, res) => {
   const { full_name, email, password, role, phone } = req.body;

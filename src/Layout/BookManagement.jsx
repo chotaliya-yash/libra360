@@ -130,7 +130,7 @@ const BookManagement = () => {
                       <td>
                         <div className="progress mb-1" style={{ height: '6px', width: '100px' }}>
                           <div 
-                            className={`progress-bar ${book.available_stock > 0 ? 'bg-success' : 'bg-danger'}`} 
+                            className={`progress-bar-striped progress-bar ${book.available_stock > 0 ? 'bg-success' : 'bg-danger'}`} 
                             style={{ width: `${(book.available_stock / book.quantity) * 100}%` }}
                           ></div>
                         </div>

@@ -11,6 +11,7 @@ import IssueBook from "../components/IssueBook";
 import CategoryManagement from "../components/CategoryManagement";
 import AuthorManagement from "../components/AuthorManagement";
 import MemberManagement from "../Layout/MemberManagement";
+import Return_Renew from "../Layout/Return-Renew";
 export const AdminRoutes = (
   <>
     <Route path="/admin/login" element={<Admin_Login />} />
@@ -30,6 +31,7 @@ export const AdminRoutes = (
       <Route path="issue-book" element={<IssueBook />} />
       <Route path="Genre" element={<CategoryManagement />} />
       <Route path="Author" element={<AuthorManagement />} />
+      <Route path="return-renew" element={<Return_Renew />} />
       <Route path="membermanagement" element={<MemberManagement />} />
       <Route path="*" element={<AdminNotFound />} />
     </Route>

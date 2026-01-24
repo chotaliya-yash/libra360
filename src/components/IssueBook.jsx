@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AssignmentIcon from "@mui/icons-material/Assignment";
@@ -7,6 +7,9 @@ import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn"; 
 
 const IssueBook = () => {
+  useEffect(() => {
+    document.title = "Issue Book";
+  })
   const navigate = useNavigate();
   const today = new Date().toISOString().split("T")[0];
 
@@ -28,7 +31,7 @@ const IssueBook = () => {
     due_date: "",
     payment_method: "Cash",
     amount: "",
-    status: "Issue",
+    status: "Issued",
   });
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
