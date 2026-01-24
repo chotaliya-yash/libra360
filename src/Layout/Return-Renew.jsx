@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import axios from "axios";
-
+import { useNavigate } from "react-router-dom";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import HistoryIcon from '@mui/icons-material/History';
 // MUI Components & Icons
 import { CircularProgress, Box } from "@mui/material";
 import {
@@ -15,6 +17,7 @@ import ReturnModal from "../components/ReturnModal";
 import RenewModal from "../components/RenewModal";
 
 const Return_Renew = () => {
+  const navigate = useNavigate();
   // --- States ---
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -90,12 +93,12 @@ const Return_Renew = () => {
     setSelectedIssue(issue);
     setRenewModalOpen(true);
   };
-// return api
+  // return api
   const handleConfirmReturn = async () => {
     try {
       await axios.post(
         `http://localhost:5000/api/issue/return/${selectedIssue.issue_id}`,
-        {modalData :modalData },
+        { modalData: modalData },
         { withCredentials: true },
       );
       setReturnModalOpen(false);
@@ -105,12 +108,12 @@ const Return_Renew = () => {
       alert("Failed to process return.");
     }
   };
-// renew api
+  // renew api
   const handleConfirmRenew = async (newData) => {
     try {
       await axios.post(
         `http://localhost:5000/api/issue/renew/${selectedIssue.issue_id}`,
-        { ReNewData :newData },
+        { ReNewData: newData },
         { withCredentials: true },
       );
       setRenewModalOpen(false);
@@ -138,6 +141,14 @@ const Return_Renew = () => {
           <SwapHoriz className="me-2 text-primary" fontSize="large" />
           Return / Renew Book
         </h4>
+        <div className="d-flex gap-2">
+          <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate(-1)}>
+            <ArrowBackIcon fontSize="small" /> Back
+          </button>
+          <button className="btn btn-dark btn-sm" onClick={() => navigate('/admin/issue-history')}>
+            <HistoryIcon fontSize="small" /> Issue History
+          </button>
+        </div>
       </div>
 
       {/* Search Section */}
@@ -235,7 +246,8 @@ const Return_Renew = () => {
                             />{" "}
                             Return
                           </button>
-                          {new Date(issue.due_date).setHours(0, 0, 0, 0) === new Date().setHours(0, 0, 0, 0) && (
+                          {new Date(issue.due_date).setHours(0, 0, 0, 0) ===
+                            new Date().setHours(0, 0, 0, 0) && (
                             <button
                               className="btn btn-sm btn-white py-2"
                               onClick={() => {

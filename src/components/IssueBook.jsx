@@ -45,7 +45,7 @@ const IssueBook = () => {
   const handleVerify = async (e) => {
     e.preventDefault();
 
-    if (formData.due_date < today) {
+    if (formData.due_date <= today) {
       alert("Return date cannot be earlier than today!");
       return;
     }
@@ -92,6 +92,7 @@ const IssueBook = () => {
       if (res.status === 201) {
         alert("Book Issued Successfully!");
       }
+      navigate("/admin/issue-book");
     } catch (err) {
       console.error(err);
       alert("Failed to complete issue process.");

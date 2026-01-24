@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 // Material Icons Imports
 import BookIcon from "@mui/icons-material/Book";
 import PeopleIcon from "@mui/icons-material/People";
@@ -7,11 +7,27 @@ import CurrencyRupeeIcon from "@mui/icons-material/CurrencyRupee";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 const Dashboard = () => {
-  useEffect(()=>{
-    document.title = "dashboard";
-  },[]);
+  const [Data, setData] = useState([]);
+  useEffect(() => {
+    document.title = "Dashboard";
+
+    const fetchDashboardData = async () => {
+      try {
+        const resData = await axios.get(
+          "http://localhost:5000/api/admin/dashboard-stats",
+          { withCredentials: true },
+        );
+        setData(resData.data);
+      } catch (err) {
+        console.error("Dashboard Stats Error:", err);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
   return (
     <div className="container-fluid p-4" style={{ minHeight: "100vh" }}>
       {/* Page Heading */}
@@ -36,7 +52,7 @@ const Dashboard = () => {
                   <div className="text-primary fw-bold text-uppercase small mb-1">
                     Total Books
                   </div>
-                  <div className="h4 mb-0 fw-bold">1,250</div>
+                  <div className="h4 mb-0 fw-bold">{Data.totalBooks}</div>
                 </div>
                 <BookIcon sx={{ fontSize: 40, color: "#dddfeb" }} />
               </div>
@@ -56,7 +72,7 @@ const Dashboard = () => {
                   <div className="text-success fw-bold text-uppercase small mb-1">
                     Active Members
                   </div>
-                  <div className="h4 mb-0 fw-bold">450</div>
+                  <div className="h4 mb-0 fw-bold">{Data.totalMembers}</div>
                 </div>
                 <PeopleIcon sx={{ fontSize: 40, color: "#dddfeb" }} />
               </div>
@@ -74,9 +90,9 @@ const Dashboard = () => {
               <div className="d-flex align-items-center justify-content-between">
                 <div>
                   <div className="text-warning fw-bold text-uppercase small mb-1">
-                    Returns Today
+                    Issued Books
                   </div>
-                  <div className="h4 mb-0 fw-bold">12</div>
+                  <div className="h4 mb-0 fw-bold">{Data.totalIssuedBooks}</div>
                 </div>
                 <AssignmentReturnIcon sx={{ fontSize: 40, color: "#dddfeb" }} />
               </div>
@@ -94,9 +110,9 @@ const Dashboard = () => {
               <div className="d-flex align-items-center justify-content-between">
                 <div>
                   <div className="text-danger fw-bold text-uppercase small mb-1">
-                    Pending Fines
+                    Revenue Collected
                   </div>
-                  <div className="h4 mb-0 fw-bold">₹ 2,400</div>
+                  <div className="h4 mb-0 fw-bold">₹ {Data.totalRevenue || 0}</div>
                 </div>
                 <CurrencyRupeeIcon sx={{ fontSize: 40, color: "#dddfeb" }} />
               </div>
@@ -127,7 +143,29 @@ const Dashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
+                    {Data.pendingReturns && Data.pendingReturns.length > 0 ? (
+                      Data.pendingReturns.map((item) => (
+                        <tr key={item.issue_id}>
+                          <td>{item.book_name}</td>
+                          <td>{item.user_name}</td>
+                          <td>
+                            {new Date(item.due_date).toLocaleDateString()}
+                          </td>
+                          <td>
+                            <span className="badge bg-warning text-dark cursor-pointer">
+                              Send Reminder
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="4" className="text-center py-4">
+                          No pending returns for today.
+                        </td>
+                      </tr>
+                    )}
+                    {/* <tr>
                       <td>Modern React 2026</td>
                       <td>Aakash Mehta</td>
                       <td>10 Jan 2026</td>
@@ -136,7 +174,7 @@ const Dashboard = () => {
                           Return Now
                         </span>
                       </td>
-                    </tr>
+                    </tr> */}
                   </tbody>
                 </table>
               </div>

@@ -43,7 +43,7 @@ export default function AdminRootlayout() {
     { text: "Author/Publisher", icon: <Person />, path: "/admin/Author" },
     { text: "Issue Book", icon: <SwapHoriz />, path: "/admin/issue-book" },
     { text: "Return/Renew", icon: <History />, path: "/admin/return-renew" },
-    { text: "Penalty/Fine", icon: <Payments /> },
+    { text: "Transaction", icon: <Payments />, path: "/admin/Transaction" },
     {
       text: "Member Management",
       icon: <GroupAdd />,

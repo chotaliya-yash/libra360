@@ -12,6 +12,8 @@ import CategoryManagement from "../components/CategoryManagement";
 import AuthorManagement from "../components/AuthorManagement";
 import MemberManagement from "../Layout/MemberManagement";
 import Return_Renew from "../Layout/Return-Renew";
+import TransactionPage from "../Layout/TransactionPage";
+import IssueHistory from "../Layout/IssueHistory";
 export const AdminRoutes = (
   <>
     <Route path="/admin/login" element={<Admin_Login />} />
@@ -27,8 +29,10 @@ export const AdminRoutes = (
       <Route path="dashboard" element={<AdminDashboard />} />
       <Route path="add-book" element={<AddBook />} />
       <Route path="register" element={<Register />} />
+      <Route path="Transaction" element={<TransactionPage />} />
       <Route path="bookmanagement" element={<BookManagement />} />
       <Route path="issue-book" element={<IssueBook />} />
+      <Route path="issue-history" element={<IssueHistory />} />
       <Route path="Genre" element={<CategoryManagement />} />
       <Route path="Author" element={<AuthorManagement />} />
       <Route path="return-renew" element={<Return_Renew />} />
