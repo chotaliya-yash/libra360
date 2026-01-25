@@ -128,7 +128,7 @@ const Dashboard = () => {
           <div className="card shadow border-0">
             <div className="card-header bg-white py-3">
               <h6 className="m-0 fw-bold text-primary">
-                Pending Returns (Today)
+                Pending Returns (Today) : {Data.totalTodayReturn ? Data.totalTodayReturn.length : 0}
               </h6>
             </div>
             <div className="card-body">
@@ -143,8 +143,8 @@ const Dashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {Data.pendingReturns && Data.pendingReturns.length > 0 ? (
-                      Data.pendingReturns.map((item) => (
+                    {Data.totalTodayReturn && Data.totalTodayReturn.length > 0 ? (
+                      Data.totalTodayReturn.map((item) => (
                         <tr key={item.issue_id}>
                           <td>{item.book_name}</td>
                           <td>{item.user_name}</td>

@@ -7,12 +7,31 @@ import SearchIcon from "@mui/icons-material/Search";
 import ToggleOnIcon from "@mui/icons-material/ToggleOn";
 import ToggleOffIcon from "@mui/icons-material/ToggleOff";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-
+import HistoryViewModel from "../components/HistoryViewModel";
 const MemberManagement = () => {
   const navigate = useNavigate();
   const [members, setMembers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [open, setOpen] = React.useState(false);
+  const [viewHistoryData, setViewHistoryData] = useState([]);
+
+  const handleClickOpen = async (viewHistoryId) => {
+    const viewHistory = await axios.get(
+      `http://localhost:5000/api/members/view-history/${viewHistoryId}`,
+      {
+        withCredentials: true,
+      },
+    );
+    if(viewHistory.status === 404){
+      setViewHistoryData([]);
+    }
+    setViewHistoryData(viewHistory.data);
+    setOpen(true);
+  };
+  const handleClose = () => {
+    setOpen(false);
+  };
 
   const fetchMembers = async () => {
     try {
@@ -37,11 +56,11 @@ const MemberManagement = () => {
       await axios.patch(
         `http://localhost:5000/api/members/toggle-status/${id}`,
         { is_active: !currentStatus },
-        { withCredentials: true }
+        { withCredentials: true },
       );
       fetchMembers(); // Refresh list
     } catch (err) {
-    console.log(err)
+      console.log(err);
       alert("Failed to update member status.");
     }
   };
@@ -49,7 +68,7 @@ const MemberManagement = () => {
   const filteredMembers = members.filter(
     (m) =>
       m.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      m.email.toLowerCase().includes(searchTerm.toLowerCase())
+      m.email.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
@@ -61,10 +80,16 @@ const MemberManagement = () => {
           Member Management
         </h4>
         <div className="d-flex gap-2">
-          <button className="btn btn-primary btn-sm px-3" onClick={() => navigate("/admin/register")}>
+          <button
+            className="btn btn-primary btn-sm px-3"
+            onClick={() => navigate("/admin/register")}
+          >
             <PersonAddIcon className="me-1" /> Add Member
           </button>
-          <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate(-1)}>
+          <button
+            className="btn btn-outline-secondary btn-sm"
+            onClick={() => navigate(-1)}
+          >
             <ArrowBackIcon fontSize="small" /> Back
           </button>
         </div>
@@ -98,46 +123,85 @@ const MemberManagement = () => {
                 <th>Contact</th>
                 <th>Status</th>
                 <th className="text-center">Action</th>
+                <th className="text-center">View</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan="5" className="text-center py-5">Loading Members...</td></tr>
+                <tr>
+                  <td colSpan="5" className="text-center py-5">
+                    Loading Members...
+                  </td>
+                </tr>
               ) : filteredMembers.length > 0 ? (
                 filteredMembers.map((member) => (
                   <tr key={member.member_id}>
-                    <td className="ps-4 text-muted small">#{member.member_id}</td>
+                    <td className="ps-4 text-muted small">
+                      #{member.member_id}
+                    </td>
                     <td>
                       <div className="fw-bold">{member.full_name}</div>
-                      <div className="small text-muted">{member.gender} | {new Date(member.date_of_birth).toLocaleDateString()}</div>
+                      <div className="small text-muted">
+                        {member.gender} |{" "}
+                        {new Date(member.date_of_birth).toLocaleDateString()}
+                      </div>
                     </td>
                     <td>
-                      <div className="small"><strong>Email:</strong> {member.email}</div>
-                      <div className="small"><strong>Phone:</strong> {member.phone}</div>
+                      <div className="small">
+                        <strong>Email:</strong> {member.email}
+                      </div>
+                      <div className="small">
+                        <strong>Phone:</strong> {member.phone}
+                      </div>
                     </td>
                     <td>
-                      <span className={`badge rounded-pill ${member.is_active ? "bg-success-subtle text-success" : "bg-danger-subtle text-danger"}`}>
+                      <span
+                        className={`badge rounded-pill ${member.is_active ? "bg-success-subtle text-success" : "bg-danger-subtle text-danger"}`}
+                      >
                         {member.is_active ? "Active" : "Inactive"}
                       </span>
                     </td>
                     <td className="text-center">
-                      <button 
+                      <button
                         className={`btn btn-sm border-0 ${member.is_active ? "text-danger" : "text-success"}`}
-                        onClick={() => handleToggleStatus(member.member_id, member.is_active)}
-                        title={member.is_active ? "Deactivate Member" : "Activate Member"}
+                        onClick={() =>
+                          handleToggleStatus(member.member_id, member.is_active)
+                        }
+                        title={
+                          member.is_active
+                            ? "Deactivate Member"
+                            : "Activate Member"
+                        }
                       >
-                        {member.is_active ? <ToggleOnIcon fontSize="large" /> : <ToggleOffIcon fontSize="large" />}
+                        {member.is_active ? (
+                          <ToggleOnIcon fontSize="large" />
+                        ) : (
+                          <ToggleOffIcon fontSize="large" />
+                        )}
+                      </button>
+                    </td>
+                    <td className="text-center">
+                      <button
+                        className="btn btn-success"
+                        onClick={() => handleClickOpen(member.member_id)}
+                      >
+                        View History
                       </button>
                     </td>
                   </tr>
                 ))
               ) : (
-                <tr><td colSpan="5" className="text-center py-5 text-muted">No members found.</td></tr>
+                <tr>
+                  <td colSpan="5" className="text-center py-5 text-muted">
+                    No members found.
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
         </div>
       </div>
+      <HistoryViewModel open={open} handleClose={handleClose} data={viewHistoryData} />
     </div>
   );
 };

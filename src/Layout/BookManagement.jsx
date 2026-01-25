@@ -6,6 +6,8 @@ import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import EditStock from "../components/EditStock";
 
 const BookManagement = () => {
   const navigate = useNavigate();
@@ -36,7 +38,7 @@ const BookManagement = () => {
   const filteredBooks = books.filter(
     (book) =>
       book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      book.isbn_number.includes(searchTerm)
+      book.isbn_number.includes(searchTerm),
   );
 
   const handleDelete = async (id) => {
@@ -53,6 +55,38 @@ const BookManagement = () => {
     }
   };
 
+  const handleUpdate = async (newQuantity, book) => {
+    try {
+      const response = await axios.put(
+        `http://localhost:5000/api/books/${book.book_id}`,
+        {
+          quantity: newQuantity, // Send the new total
+        },
+        { withCredentials: true },
+      );
+
+      if (response.status === 200) {
+        await fetchBooks(); 
+        handleClose();
+      }
+    } catch (err) {
+      console.error("Update error:", err);
+    }
+  };
+
+  const [open, setOpen] = useState(false);
+  const [selectedBook, setSelectedBook] = useState(null);
+
+  const handleClickOpen = (book) => {
+    setSelectedBook(book);
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setSelectedBook(null);
+  };
+
   return (
     <div className="container mt-4 mb-5">
       {/* Header Section */}
@@ -62,10 +96,16 @@ const BookManagement = () => {
           Book Inventory Management
         </h4>
         <div className="d-flex gap-2">
-          <button className="btn btn-primary d-flex align-items-center" onClick={() => navigate("/admin/add-book")}>
+          <button
+            className="btn btn-primary d-flex align-items-center"
+            onClick={() => navigate("/admin/add-book")}
+          >
             <AddIcon className="me-1" /> Add New Book
           </button>
-          <button className="btn btn-outline-secondary" onClick={() => navigate(-1)}>
+          <button
+            className="btn btn-outline-secondary"
+            onClick={() => navigate(-1)}
+          >
             <ArrowBackIcon fontSize="small" /> Back
           </button>
         </div>
@@ -89,8 +129,15 @@ const BookManagement = () => {
               </div>
             </div>
             <div className="col-md-6 text-md-end mt-3 mt-md-0">
-              <span className="me-3">Total Titles: <strong>{books.length}</strong></span>
-              <span>Available Stock: <strong>{books.reduce((acc, curr) => acc + curr.available_stock, 0)}</strong></span>
+              <span className="me-3">
+                Total Titles: <strong>{books.length}</strong>
+              </span>
+              <span>
+                Available Stock:{" "}
+                <strong>
+                  {books.reduce((acc, curr) => acc + curr.available_stock, 0)}
+                </strong>
+              </span>
             </div>
           </div>
         </div>
@@ -113,47 +160,88 @@ const BookManagement = () => {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan="6" className="text-center py-5">Loading Inventory...</td></tr>
+                  <tr>
+                    <td colSpan="6" className="text-center py-5">
+                      Loading Inventory...
+                    </td>
+                  </tr>
                 ) : filteredBooks.length > 0 ? (
                   filteredBooks.map((book) => (
                     <tr key={book.book_id}>
                       <td className="ps-4 text-muted small">#{book.book_id}</td>
                       <td>
                         <div className="fw-bold text-dark">{book.title}</div>
-                        <div className="small text-muted">ISBN: {book.isbn_number}</div>
+                        <div className="small text-muted">
+                          ISBN: {book.isbn_number}
+                        </div>
                       </td>
                       <td>
-                        <div className="small"><strong>Auth:</strong> {book.author_name}</div>
-                        <div className="small text-muted text-uppercase" style={{ fontSize: '0.75rem' }}>{book.category_name}</div>
+                        <div className="small">
+                          <strong>Auth:</strong> {book.author_name}
+                        </div>
+                        <div
+                          className="small text-muted text-uppercase"
+                          style={{ fontSize: "0.75rem" }}
+                        >
+                          {book.category_name}
+                        </div>
                       </td>
                       <td className="fw-medium text-success">₹{book.price}</td>
                       <td>
-                        <div className="progress mb-1" style={{ height: '6px', width: '100px' }}>
-                          <div 
-                            className={`progress-bar-striped progress-bar ${book.available_stock > 0 ? 'bg-success' : 'bg-danger'}`} 
-                            style={{ width: `${(book.available_stock / book.quantity) * 100}%` }}
+                        <div
+                          className="progress mb-1"
+                          style={{ height: "6px", width: "100px" }}
+                        >
+                          <div
+                            className={`progress-bar-striped progress-bar ${book.available_stock > book.quantity / 3 ? "bg-success" : "bg-danger"}`}
+                            style={{
+                              width: `${(book.available_stock / book.quantity) * 100}%`,
+                            }}
                           ></div>
                         </div>
-                        <span className="small text-muted">{book.available_stock} / {book.quantity} available</span>
+                        <span className="small text-muted">
+                          {book.available_stock} / {book.quantity} Available (
+                          {Math.round(
+                            (book.available_stock / book.quantity) * 100,
+                          )}
+                          %)
+                        </span>
                       </td>
                       <td className="text-center">
-                        <button 
-                          className="btn btn-outline-danger btn-sm border-0" 
+                        <button
+                          className="btn btn-outline-danger btn-sm border-0"
                           onClick={() => handleDelete(book.book_id)}
                         >
                           <DeleteOutlineIcon />
+                        </button>
+                        <button
+                          className="btn btn-outline-primary btn-sm border-0 ms-2"
+                          onClick={() => handleClickOpen(book)} // Pass the whole book object
+                        >
+                          <EditDocumentIcon className="me-2" />
+                          Stock
                         </button>
                       </td>
                     </tr>
                   ))
                 ) : (
-                  <tr><td colSpan="6" className="text-center py-5 text-muted">No books found matching your search.</td></tr>
+                  <tr>
+                    <td colSpan="6" className="text-center py-5 text-muted">
+                      No books found matching your search.
+                    </td>
+                  </tr>
                 )}
               </tbody>
             </table>
           </div>
         </div>
       </div>
+      <EditStock
+        open={open}
+        book={selectedBook}
+        handleClose={handleClose}
+        handleUpdate={handleUpdate}
+      />
     </div>
   );
 };

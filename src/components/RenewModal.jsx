@@ -137,9 +137,9 @@ const RenewModal = ({ open, onClose, selectedIssue, onConfirm }) => {
                   label="Cash"
                 />
                 <FormControlLabel
-                  value="Online"
+                  value="UPI"
                   control={<Radio />}
-                  label="Online Payment"
+                  label="UPI"
                 />
               </RadioGroup>
             </FormControl>

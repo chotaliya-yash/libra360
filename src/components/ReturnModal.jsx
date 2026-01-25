@@ -27,7 +27,8 @@ const ReturnModal = ({ open, onClose, selectedIssue, modalData, onConfirm }) => 
           }}
         >
           {modalData.message}
-          {modalData.type === "OVERDUE" && ` Total Fine: ₹${modalData.amount.toFixed(2)}`}
+          {modalData.type === "OVERDUE" && ` Total Fine: ₹${modalData.amount.toFixed(
+          2)}`}
         </Typography>
 
         {modalData.type === "REFUND" && (

@@ -48,8 +48,8 @@ const pool = new Pool({
 
 // automation task to update overdue books daily at midnight
 
-cron.schedule('0 0 * * *', async () => {
-  console.log('Running daily check for overdue books...');
+cron.schedule("0 0 * * *", async () => {
+  console.log("Running daily check for overdue books...");
 
   const updateQuery = `
     UPDATE public.book_issue
@@ -62,7 +62,7 @@ cron.schedule('0 0 * * *', async () => {
     const res = await pool.query(updateQuery);
     console.log(`${res.rowCount} records updated to pending.`);
   } catch (err) {
-    console.error('Error running automation task:', err);
+    console.error("Error running automation task:", err);
   }
 });
 
@@ -161,6 +161,24 @@ app.get("/api/members", IsAdmin, async (req, res) => {
     res
       .status(500)
       .json({ error: "Failed to fetch members", details: err.message });
+  }
+});
+
+app.get("/api/members/view-history/:id", IsAdmin, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query(
+      "SELECT * FROM book_issue WHERE user_id = $1 ORDER BY issue_id DESC",
+      [id],
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "issue Book not found" });
+    }
+    res.json(result.rows);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ error: "Failed to fetch member", details: err.message });
   }
 });
 
@@ -378,6 +396,22 @@ app.post("/api/books/add", IsAdmin, async (req, res) => {
   }
 });
 
+app.put("/api/books/:id", IsAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { quantity } = req.body;
+
+  try {
+    const result = await pool.query(
+      "UPDATE books SET quantity = quantity + $1 , available_stock = available_stock + $1 WHERE book_id = $2 RETURNING *",
+      [quantity, id]
+    );
+
+    res.status(200).json({ message: "Stock updated", updatedBook: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: "Server error" , details: err.message });
+  }
+});
+
 app.get("/api/books", IsAdmin, async (req, res) => {
   try {
     // Exact columns requested from public.books
@@ -414,6 +448,15 @@ app.post("/api/book-issue/verifyDetails", IsAdmin, async (req, res) => {
       return res
         .status(400)
         .json({ message: "User ID and Book ID cannot be empty" });
+    }
+
+    const pre_Issue = await pool.query(
+      "SELECT issue_id FROM public.book_issue where user_id = $1 and book_id = $2 and status = 'Issued'; ",
+      [user_id, book_id],
+    );
+
+    if(pre_Issue.rows.length > 0){
+      return res.status(400).json({ message: "this Member has Already Issued this Book." });
     }
 
     const user = await pool.query(
@@ -536,13 +579,14 @@ app.post("/api/book-issue/add", IsAdmin, async (req, res) => {
 
 app.get("/api/issues", async (req, res) => {
   try {
-    const showAll = req.query.all === 'true'; 
+    const showAll = req.query.all === "true";
 
     let queryText;
     if (showAll) {
       queryText = "SELECT * FROM book_issue ORDER BY issue_id DESC;";
     } else {
-      queryText = "SELECT * FROM book_issue WHERE status = 'Issued' ORDER BY issue_id DESC;";
+      queryText =
+        "SELECT * FROM book_issue WHERE status = 'Issued' ORDER BY issue_id DESC;";
     }
 
     const result = await pool.query(queryText);
@@ -590,8 +634,8 @@ app.post("/api/issue/renew/:id", IsAdmin, async (req, res) => {
     await client.query("BEGIN");
 
     await client.query(
-      "UPDATE book_issue SET status = 'Returned' WHERE issue_id = $1",
-      [id],
+      "UPDATE book_issue SET status = 'Returned' , return_date = $1 WHERE issue_id = $2",
+      [new Date() , id],
     );
 
     const insertQuery = `
@@ -644,14 +688,13 @@ app.post("/api/issue/renew/:id", IsAdmin, async (req, res) => {
 
 app.post("/api/issue/return/:id", IsAdmin, async (req, res) => {
   const { id } = req.params;
-  const { type, amount, user_id } = req.body.modalData; // Ensure user_id is passed from frontend
+  const { type, amount, user_id } = req.body.modalData;
 
   const client = await pool.connect();
 
   try {
     await client.query("BEGIN");
 
-    // 1. Check if the issue exists and get book/user info
     const issueResult = await client.query(
       "SELECT book_id, user_id FROM book_issue WHERE issue_id = $1 AND status = 'Issued'",
       [id],
@@ -662,23 +705,19 @@ app.post("/api/issue/return/:id", IsAdmin, async (req, res) => {
     }
 
     const { book_id, user_id: db_user_id } = issueResult.rows[0];
-    const targetUserId = user_id || db_user_id; // Fallback to DB user_id if not in body
+    const targetUserId = user_id || db_user_id; 
 
-    // 2. Update Book Issue status
     await client.query(
       "UPDATE book_issue SET status = 'Returned', return_date = $2 WHERE issue_id = $1",
       [id, new Date()],
     );
 
-    // 3. Update Book Stock (Always +1 regardless of type)
     await client.query(
       "UPDATE books SET available_stock = available_stock + 1 WHERE book_id = $1",
       [book_id],
     );
 
-    // 4. Transaction Logic based on Type
     if (type === "OVERDUE") {
-      // Penalty: Positive amount (User owes money)
       await client.query(
         `INSERT INTO public.transactions 
         (user_id, amount, transaction_type, payment_method, reference_id, created_at) 
@@ -686,7 +725,6 @@ app.post("/api/issue/return/:id", IsAdmin, async (req, res) => {
         [targetUserId, amount, id, new Date()],
       );
     } else if (type === "REFUND") {
-      // Refund: Convert amount to negative (System returns money)
       const refundAmount = -Math.abs(amount);
 
       await client.query(
@@ -766,11 +804,15 @@ app.get("/api/admin/dashboard-stats", IsAdmin, async (req, res) => {
     const totalRevenueResult = await pool.query(
       "SELECT COALESCE(SUM(amount), 0) AS total_revenue FROM transactions ",
     );
+    const today = new Date().toLocaleDateString("en-CA"); // Outputs 'YYYY-MM-DD' correctly in local time
+
     const totalTodayReturn = await pool.query(
-      "SELECT * FROM book_issue WHERE due_date = $1",
-      [new Date().toISOString().split("T")[0]],
+      "SELECT * FROM book_issue WHERE due_date <= $1 AND status = 'Issued'",
+      [today],
     );
 
+    console.log("Dashboard stats fetched successfully");
+    // console.log(totalTodayReturn.rows);
     res.status(200).json({
       totalMembers: parseInt(totalMembersResult.rows[0].count, 10),
       totalBooks: parseInt(totalBooksResult.rows[0].count, 10),
