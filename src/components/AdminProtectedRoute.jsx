@@ -17,6 +17,8 @@ const AdminProtectedRoute = ({ children }) => {
 
         if (res.data.loggedIn) {
           setIsAuth(true);
+          localStorage.setItem("AdminRole", res.data.role);
+          localStorage.setItem("AdminName", res.data.adminName);
         }
       } catch (error) {
         setIsAuth(false);

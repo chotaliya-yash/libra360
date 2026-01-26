@@ -163,7 +163,7 @@ const MemberManagement = () => {
                     </td>
                     <td className="text-center">
                       <button
-                        className={`btn btn-sm border-0 ${member.is_active ? "text-danger" : "text-success"}`}
+                        className={`btn btn-sm border-0 ${member.is_active ? "text-success" : "text-danger"}`}
                         onClick={() =>
                           handleToggleStatus(member.member_id, member.is_active)
                         }

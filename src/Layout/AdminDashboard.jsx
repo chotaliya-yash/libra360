@@ -112,7 +112,9 @@ const Dashboard = () => {
                   <div className="text-danger fw-bold text-uppercase small mb-1">
                     Revenue Collected
                   </div>
-                  <div className="h4 mb-0 fw-bold">₹ {Data.totalRevenue || 0}</div>
+                  <div className="h4 mb-0 fw-bold">
+                    ₹ {Data.totalRevenue || 0}
+                  </div>
                 </div>
                 <CurrencyRupeeIcon sx={{ fontSize: 40, color: "#dddfeb" }} />
               </div>
@@ -128,7 +130,8 @@ const Dashboard = () => {
           <div className="card shadow border-0">
             <div className="card-header bg-white py-3">
               <h6 className="m-0 fw-bold text-primary">
-                Pending Returns (Today) : {Data.totalTodayReturn ? Data.totalTodayReturn.length : 0}
+                Pending Returns (Today) :{" "}
+                {Data.totalTodayReturn ? Data.totalTodayReturn.length : 0}
               </h6>
             </div>
             <div className="card-body">
@@ -143,7 +146,8 @@ const Dashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {Data.totalTodayReturn && Data.totalTodayReturn.length > 0 ? (
+                    {Data.totalTodayReturn &&
+                    Data.totalTodayReturn.length > 0 ? (
                       Data.totalTodayReturn.map((item) => (
                         <tr key={item.issue_id}>
                           <td>{item.book_name}</td>
@@ -152,9 +156,16 @@ const Dashboard = () => {
                             {new Date(item.due_date).toLocaleDateString()}
                           </td>
                           <td>
-                            <span className="badge bg-warning text-dark cursor-pointer">
-                              Send Reminder
-                            </span>
+                            {new Date(item.due_date).setHours(0, 0, 0, 0) <
+                            new Date().setHours(0, 0, 0, 0) ? (
+                              <span className="badge bg-danger cursor-pointer">
+                                Pending
+                              </span>
+                            ) : (
+                              <span className="badge bg-warning text-dark cursor-pointer">
+                                Send Reminder
+                              </span>
+                            )}
                           </td>
                         </tr>
                       ))

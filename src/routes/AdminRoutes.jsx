@@ -14,6 +14,8 @@ import MemberManagement from "../Layout/MemberManagement";
 import Return_Renew from "../Layout/Return-Renew";
 import TransactionPage from "../Layout/TransactionPage";
 import IssueHistory from "../Layout/IssueHistory";
+import AdminProfile from "../Layout/AdminProfile";
+import AdminAddEmployee from "../components/AdminAddEmployee";
 export const AdminRoutes = (
   <>
     <Route path="/admin/login" element={<Admin_Login />} />
@@ -37,6 +39,8 @@ export const AdminRoutes = (
       <Route path="Author" element={<AuthorManagement />} />
       <Route path="return-renew" element={<Return_Renew />} />
       <Route path="membermanagement" element={<MemberManagement />} />
+      <Route path="profile" element={<AdminProfile />} />
+      <Route path="add-employee" element={<AdminAddEmployee />} />
       <Route path="*" element={<AdminNotFound />} />
     </Route>
   </>

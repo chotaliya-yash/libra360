@@ -92,6 +92,37 @@ export default function AdminRootlayout() {
             </Link>
           </ListItem>
         ))}
+        {localStorage.getItem("AdminRole") === "supervisor" && (
+          <ListItem disablePadding>
+            <Link
+              to="/admin/add-employee"
+              style={{
+                textDecoration: "none",
+                color: "inherit",
+                width: "100%",
+              }}
+            >
+              <ListItemButton
+                sx={{
+                  "&:hover": {
+                    bgcolor: "primary.main",
+                    color: "white",
+                    fontWeight: "bold",
+                    borderRadius: "0px 25px 25px 0px",
+                  },
+                }}
+              >
+                <ListItemIcon sx={{ color: "black" }}>
+                  <GroupAdd />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Add Employee"
+                  primaryTypographyProps={{ fontSize: "14px" }}
+                />
+              </ListItemButton>
+            </Link>
+          </ListItem>
+        )}
       </List>
     </div>
   );
@@ -132,17 +163,22 @@ export default function AdminRootlayout() {
               libra360°
             </Typography>
           </Typography>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Typography
-              variant="body2"
-              sx={{ display: { xs: "none", sm: "block" } }}
-            >
-              Librarian Admin
-            </Typography>
-            <Avatar sx={{ bgcolor: "primary.main", width: 35, height: 35 }}>
-              A
-            </Avatar>
-          </Box>
+          <Link
+            to="/admin/profile"
+            style={{ textDecoration: "none", color: "inherit" }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Typography
+                variant="body2"
+                sx={{ display: { xs: "none", sm: "block" } }}
+              >
+                <span>{localStorage.getItem("AdminName")}</span>
+              </Typography>
+              <Avatar sx={{ bgcolor: "primary.main", width: 35, height: 35 }}>
+                A
+              </Avatar>
+            </Box>
+          </Link>
         </Toolbar>
       </AppBar>
 

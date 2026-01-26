@@ -75,6 +75,14 @@ const IsAdmin = (req, res, next) => {
   }
 };
 
+const IsSupervisor = (req, res, next) => {
+  if (req.session && req.session.role === "supervisor") {
+    next();
+  } else {
+    res.status(401).json({ message: "Unauthorized: Member not logged in" });
+  }
+};
+
 //member
 
 app.post("/api/admin/Register-member", IsAdmin, async (req, res) => {
@@ -403,12 +411,14 @@ app.put("/api/books/:id", IsAdmin, async (req, res) => {
   try {
     const result = await pool.query(
       "UPDATE books SET quantity = quantity + $1 , available_stock = available_stock + $1 WHERE book_id = $2 RETURNING *",
-      [quantity, id]
+      [quantity, id],
     );
 
-    res.status(200).json({ message: "Stock updated", updatedBook: result.rows[0] });
+    res
+      .status(200)
+      .json({ message: "Stock updated", updatedBook: result.rows[0] });
   } catch (err) {
-    res.status(500).json({ error: "Server error" , details: err.message });
+    res.status(500).json({ error: "Server error", details: err.message });
   }
 });
 
@@ -455,17 +465,23 @@ app.post("/api/book-issue/verifyDetails", IsAdmin, async (req, res) => {
       [user_id, book_id],
     );
 
-    if(pre_Issue.rows.length > 0){
-      return res.status(400).json({ message: "this Member has Already Issued this Book." });
+    if (pre_Issue.rows.length > 0) {
+      return res
+        .status(400)
+        .json({ message: "this Member has Already Issued this Book." });
     }
 
     const user = await pool.query(
-      "SELECT member_id , full_name FROM public.members where member_id = $1 and is_active = true; ",
+      "SELECT member_id , full_name , is_active FROM public.members where member_id = $1 and is_active = true; ",
       [user_id],
     );
     if (user.rows.length === 0) {
       return res.status(400).json({ message: "Invalid User ID or not Active" });
     }
+    if(!user.rows[0].is_active){
+      return res.status(400).json({ message: "User is not Active" });
+    }
+      
     const bookVerify = await pool.query(
       "SELECT book_id , title , isbn_number,  price, quantity, available_stock FROM books where book_id = $1 and quantity > 0; ",
       [book_id],
@@ -635,7 +651,7 @@ app.post("/api/issue/renew/:id", IsAdmin, async (req, res) => {
 
     await client.query(
       "UPDATE book_issue SET status = 'Returned' , return_date = $1 WHERE issue_id = $2",
-      [new Date() , id],
+      [new Date(), id],
     );
 
     const insertQuery = `
@@ -705,7 +721,7 @@ app.post("/api/issue/return/:id", IsAdmin, async (req, res) => {
     }
 
     const { book_id, user_id: db_user_id } = issueResult.rows[0];
-    const targetUserId = user_id || db_user_id; 
+    const targetUserId = user_id || db_user_id;
 
     await client.query(
       "UPDATE book_issue SET status = 'Returned', return_date = $2 WHERE issue_id = $1",
@@ -828,9 +844,92 @@ app.get("/api/admin/dashboard-stats", IsAdmin, async (req, res) => {
   }
 });
 
+app.get("/api/admin/profile", IsAdmin, (req, res) => {
+  if (req.session.adminId) {
+    return res.json({
+      adminId: req.session.adminId,
+      adminName: req.session.adminName,
+      role: req.session.role,
+      phone: req.session.phone,
+      email: req.session.email,
+    });
+  }
+  res.status(401).json({ loggedIn: false });
+});
+
+app.post("/api/admin/change-password", IsAdmin, async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+  const adminId = req.session.adminId; // Assuming adminId is stored in session
+
+  try {
+    // 1. Fetch current admin details from DB
+    const adminQuery = await pool.query(
+      "SELECT password FROM admins WHERE admin_id = $1",
+      [adminId]
+    );
+
+    if (adminQuery.rows.length === 0) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+
+    const currentHashedPassword = adminQuery.rows[0].password;
+
+    // 2. Verify if the 'oldPassword' matches the one in DB
+    const isMatch = await bcrypt.compare(oldPassword, currentHashedPassword);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Incorrect current password" });
+    }
+
+    // 3. Hash the new password
+    const saltRounds = 10;
+    const newHashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    // 4. Update the password in the database
+    await pool.query(
+      "UPDATE admins SET password = $1 WHERE admin_id = $2",
+      [newHashedPassword, adminId]
+    );
+
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error during password change" });
+  }
+});
+
+app.get("/api/admin/Employees", IsSupervisor, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT admin_id, full_name, email, role, phone , is_active
+      FROM public.admins 
+      ORDER BY admin_id DESC
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ error: "Failed to fetch employees", details: err.message });
+  }
+});
+
+app.patch("/api/admin/employee/status/:id", async (req, res) => {
+  const { id } = req.params;
+  const { is_active } = req.body;
+  console.log("Updating employee status:", id, is_active);
+  try {
+    await pool.query(
+      "UPDATE admins SET is_active = $1 WHERE admin_id = $2",
+      [is_active, id]
+    );
+    res.status(200).json({ message: "Status updated successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // admin auth
 
-app.post("/api/admin/signup", async (req, res) => {
+app.post("/api/admin/signup", IsSupervisor, async (req, res) => {
   const { full_name, email, password, role, phone } = req.body;
 
   try {
@@ -874,6 +973,10 @@ app.post("/api/admin/login", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    if (!result.rows[0].is_active) {
+      return res.status(403).json({ message: "Account is deactivated" });
+    }
+
     const admin = result.rows[0];
     const isMatch = await bcrypt.compare(password, admin.password);
 
@@ -884,6 +987,9 @@ app.post("/api/admin/login", async (req, res) => {
     // Save session
     req.session.adminId = admin.admin_id;
     req.session.role = admin.role;
+    req.session.adminName = admin.full_name;
+    req.session.phone = admin.phone;
+    req.session.email = admin.email;
 
     res.status(200).json({
       message: "Login successful",
@@ -903,6 +1009,7 @@ app.get("/api/admin/me", (req, res) => {
     return res.json({
       loggedIn: true,
       adminId: req.session.adminId,
+      adminName: req.session.adminName,
       role: req.session.role,
     });
   }
