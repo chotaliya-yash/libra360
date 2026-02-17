@@ -1,9 +1,9 @@
 import React from "react";
 import { Grid, Paper, Typography, Box } from "@mui/material";
 import AutoStoriesIcon from "@mui/icons-material/AutoStories"; // Book icon
-import PeopleIcon from "@mui/icons-material/People"; 
-import CategoryIcon from "@mui/icons-material/Category"; 
-import LanguageIcon from "@mui/icons-material/Language"; 
+import PeopleIcon from "@mui/icons-material/People";
+import CategoryIcon from "@mui/icons-material/Category";
+import LanguageIcon from "@mui/icons-material/Language";
 import { Button } from "@mui/material";
 
 function HomePage() {
@@ -33,7 +33,7 @@ function HomePage() {
     <div className="Home-main">
       <div className="container">
         <h1 className="loraFont" style={{ fontWeight: "550" }}>
-          Welcome to libra360°
+          Welcome to <spam className="gradient-text-welcome">libra360°</spam>
         </h1>
         <div className="content-text" style={{ marginBottom: "40px" }}>
           <p>
@@ -131,12 +131,51 @@ function HomePage() {
 
             <Button
               variant="contained"
+              className="explore-facilities-button"
               size="large"
               sx={{ borderRadius: "8px", textTransform: "none" }}
             >
               Explore Facilities
             </Button>
           </Box>
+        </div>
+      </div>
+      <div className="container mt-4">
+        <div className="division-line">
+          <div>
+            <img src="src/image/image 1.jpg" alt="Library Books" />
+          </div>
+
+          <div className="content-box">
+            <h2>Well-Stocked Book Collection</h2>
+            <p>
+              Our library offers a rich collection of academic, technical, and
+              reference books. Students can access textbooks, journals, and
+              competitive exam materials in a calm and organized environment
+              that supports focused learning.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Section 2 */}
+      <div>
+        <div className="container">
+          <div className="division-line-reverse">
+            <div>
+              <img src="src/image/image 2.jpg" alt="Reading Area" />
+            </div>
+
+            <div className="content-box">
+              <h2>Comfortable Reading Area</h2>
+              <p>
+                The reading area is designed for comfort and concentration.
+                Spacious seating, proper lighting, and a peaceful atmosphere
+                help students study effectively and make the most of their
+                library time.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

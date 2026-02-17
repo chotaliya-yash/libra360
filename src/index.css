@@ -15,10 +15,24 @@
   padding: 1rem;
 }
 
-.navbar .navbar-title , .admin-navbar-title {
+.navbar .navbar-title,
+.admin-navbar-title {
   margin: 0;
   color: #0e1a1e;
   text-transform: capitalize;
+}
+
+.gradient-text {
+  /* Your provided gradient */
+  background: -webkit-linear-gradient(126deg, #949408, #894301);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-text-welcome {
+  background: -webkit-linear-gradient(126deg, #949408, #894301);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .navbar .links a {
@@ -36,7 +50,7 @@
 
 .Home-main {
   text-align: center;
-  margin-top: 5rem;
+  margin-top: 2rem;
 }
 
 .Home-main .content-text {
@@ -50,7 +64,80 @@
   color: #333;
 }
 
-.footer{
+.division-line {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+}
+.division-line-reverse {
+  width: 100%;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+}
+.division-line div,
+.division-line-reverse div {
+  width: 50%;
+}
+.division-line div img,
+.division-line-reverse div img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+.division-line div img:hover,
+.division-line-reverse div img:hover {
+  box-shadow: 10px 5px 5px rgba(0, 0, 0, 0.1);
+  transform: translateY(-5px);
+}
+
+.content-box {
+  padding: 0 2rem;
+}
+.content-box h2 {
+  font-family: "Lora", serif;
+  background: -webkit-linear-gradient(126deg, #949408, #572b02);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  border-bottom: #949408 2px solid;
+  padding: 0.5rem 0;
+}
+.content-box p , .login-logo{
+  font-size: 1rem;
+  font-family: "Lora", serif;
+  color: #555;
+}
+
+@media (max-width: 600px) {
+  .division-line {
+    flex-direction: column;
+  }
+  .division-line-reverse {
+    flex-direction: column;
+  }
+  .division-line div,
+  .division-line-reverse div {
+    width: 100%;
+  }
+}
+
+.explore-facilities-button:hover {
+  display: inline-block;
+  background: -webkit-linear-gradient(126deg, #949408, #572b02);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  border-radius: 8px;
+  transition: text 0.3s ease;
+}
+
+.footer {
   display: flex;
   justify-content: center;
   align-items: center;

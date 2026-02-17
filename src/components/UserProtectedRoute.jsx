@@ -1,32 +1,26 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import axios from "axios";
 import { CircularProgress, Box } from "@mui/material";
 
-const ProtectedRoute = ({ children }) => {
+const UserProtectedRoute = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isAuth, setIsAuth] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await axios.get("http://localhost:3000/api/member/me", {
-          withCredentials: true, // Crucial to send lib_session cookie
-        });
+        const res = await axios.get(
+          "http://localhost:3000/api/member/me",
+          { withCredentials: true }
+        );
 
         if (res.data.loggedIn) {
           setIsAuth(true);
-          const { memberId: id, memberName: name } = res.data.user;
-          localStorage.setItem("memberId", id);
-          localStorage.setItem("memberName", name);
-          localStorage.setItem("loginCheck", true);
-        } else {
-          setIsAuth(false);
-          localStorage.clear();
+          localStorage.setItem("UserLogging", true);
         }
       } catch (error) {
         setIsAuth(false);
-        localStorage.clear();
         console.error("Authentication check failed:", error);
       } finally {
         setLoading(false);
@@ -52,10 +46,10 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!isAuth) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/admin/login" replace />;
   }
 
   return children;
 };
 
-export default ProtectedRoute;
+export default UserProtectedRoute;

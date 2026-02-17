@@ -1005,7 +1005,7 @@ app.post("/api/admin/login", async (req, res) => {
 });
 
 app.get("/api/admin/me", (req, res) => {
-  if (req.session.adminId) {
+  if (req.session.userId || req.session.adminId) {
     return res.json({
       loggedIn: true,
       adminId: req.session.adminId,
