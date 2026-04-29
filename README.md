@@ -80,8 +80,4 @@ nodemon adminBackend.js
 
 ---
 
-![Libra360 Dashboard](./screenshots/admin_dashboard.png)
-![Libra360 Dashboard](./screenshoot/add new book.png)
-![Libra360 admin login](./screenshoot/admin login.png)
-![Libra360 Dashboard](./screenshots/admin_dashboard.png)
-![Libra360 Dashboard](./screenshots/admin_dashboard.png)
+![Dashboard](./screenshots/admin_dashboard.png)
