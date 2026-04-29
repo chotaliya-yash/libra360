@@ -1,16 +1,91 @@
-# React + Vite
+Here’s a clean, professional version of your setup instructions formatted for a **GitHub README.md** file:
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+---
 
-Currently, two official plugins are available:
+# 🚀 Application Setup and Run Instructions
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🔗 Project Repository
 
-## React Compiler
+[https://github.com/chotaliya-yash/libra360](https://github.com/chotaliya-yash/libra360)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 1️⃣ Database Setup
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+* Import the database file:
+
+  ```bash
+  Database/db.sql
+  ```
+* Load it into your **PostgreSQL** database instance.
+
+---
+
+## 2️⃣ Dependency Installation
+
+1. Open your terminal or command prompt.
+
+2. Install all project dependencies:
+
+   ```bash
+   npm ci
+   ```
+
+---
+
+## 3️⃣ Run the Application
+
+You will need **three separate terminal windows** to run all components simultaneously.
+
+### ▶️ Terminal 1 – Frontend
+
+```bash
+npm run dev
+```
+
+* Starts the frontend development server
+* Typically uses tools like Vite or Webpack
+
+---
+
+### ▶️ Terminal 2 – User Backend
+
+```bash
+cd Backend
+nodemon userBackend.js
+```
+
+* Starts the user backend server
+* Uses **nodemon** for auto-restart on file changes
+
+---
+
+### ▶️ Terminal 3 – Admin Backend
+
+```bash
+cd Backend
+nodemon adminBackend.js
+```
+
+* Starts the admin backend server
+* Runs separately from the user backend
+
+---
+
+## ✅ Notes
+
+* Ensure **PostgreSQL** is running before starting the backend.
+* Make sure all environment variables (if any) are configured properly.
+* Install nodemon globally if not already installed:
+
+  ```bash
+  npm install -g nodemon
+  ```
+
+---
+
+If you want, I can also:
+
+* Add **.env setup section**
+* Add **project screenshots**
+* Or make it look more attractive with badges and formatting 👍
