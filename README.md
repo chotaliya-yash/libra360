@@ -77,7 +77,11 @@ nodemon adminBackend.js
   ```bash
   npm install -g nodemon
   ```
-
 ---
 
-![Dashboard](./screenshots/admin_dashboard.png)
+Admin username & Password 
+username - admin@gmail.com 
+Password - admin
+
+---
+Also visit the screenshot file in Git for a full visual overview of the system.
